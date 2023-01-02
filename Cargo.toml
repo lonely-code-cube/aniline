@@ -1,0 +1,22 @@
+[package]
+name = "aniline"
+version = "0.1.0"
+edition = "2021"
+authors = ["lonely-code-cube"]
+description = "A cli tool to search, play, download anime, create playlists and"
+license = "MIT"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.0.32", features = ["derive"] }
+crossterm = "0.25.0"
+reqwest = { version = "0.11.13", features = ["blocking", "json"] }
+serde = { version = "1.0.152", features = ["derive"] }
+thiserror = "1.0.38"
+terminal-menu = "2.0.4"
+
+[[bin]]
+name = "aniline"
+path = "src/bin/aniline.rs"
