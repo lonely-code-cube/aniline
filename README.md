@@ -28,8 +28,8 @@ aniline play "anime name"
 Options:
 
 ```sh
---vlc, -v - Play video in vlc [default mpv]
---quality, -q - Specify playback quality
+--vlc, -v           Play video in vlc [default mpv]
+--quality, -q       Specify playback quality
 ```
 
 Example with options:
