@@ -1,9 +1,9 @@
 [package]
 name = "aniline"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["lonely-code-cube"]
-description = "A cli tool to search, play, download anime, create playlists and"
+description = "A cli tool to search, play, download anime, create playlists and more"
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lonely-code-cube/aniline"
@@ -32,6 +32,11 @@ reqwest = { version = "0.11.13", features = ["blocking", "json"] }
 serde = { version = "1.0.152", features = ["derive"] }
 thiserror = "1.0.38"
 terminal-menu = "2.0.4"
+serde_json = "1.0.91"
+regex = "1.7.0"
+indicatif = "0.17.2"
+subprocess = "0.2.9"
+spinners = "4.1.0"
 
 [profile.dev]
 opt-level = 0
