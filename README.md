@@ -27,7 +27,7 @@ aniline play "anime name"
 
 Options:
 
-```sh
+```
 --vlc, -v           Play video in vlc [default mpv]
 --quality, -q       Specify playback quality
 ```
@@ -37,4 +37,18 @@ Example with options:
 aniline play "anime name" -q 720 --vlc
 ```
 
-> Note: MPV/VLC must be present in path
+> Note: MPV/VLC must be installed and  present in path
+
+### Download an anime
+
+```sh
+aniline download "grand blue"
+```
+
+Options:
+
+```
+--quality, -q       Specify video quality
+```
+
+> Note: aria2c must be installed and present in path

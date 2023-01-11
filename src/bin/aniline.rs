@@ -36,6 +36,13 @@ enum Commands {
         #[arg(short, long, default_value_t = String::from("default"))]
         quality: String,
     },
+    /// Download an anime
+    Download {
+        query: String,
+        /// Select video quality
+        #[arg(short, long, default_value_t = String::from("default"))]
+        quality: String,
+    },
 }
 
 fn main() -> Result<(), AnilineError> {
@@ -205,8 +212,89 @@ fn main() -> Result<(), AnilineError> {
                             cvideos.links[0].clone()
                         }
                     };
-                    println!("{}", "    [4/4] Playback in progress".yellow().bold());
+                    println!("{}", "    [4/4] Starting playback".yellow().bold());
                     play(*vlc, video, &anime.name)?;
+                }
+            }
+        }
+        Commands::Download { query, quality } => {
+            let mut items = HashMap::new();
+            let mut selections = Vec::<TerminalMenuItem>::new();
+            let mut sp = Spinner::new(
+                Spinners::Dots12,
+                format!("{}", " [1/4] Searching anime".yellow().bold()),
+            );
+            for i in client.get_all_anime_query_res(query)? {
+                selections.push(button(&i.name));
+                items.insert(i.name.to_owned(), i);
+            }
+            sp.stop();
+            println!();
+            if selections.len() == 0 {
+                println!("{}", "\nNo anime found".red().bold());
+                process::exit(0);
+            }
+            let anime = items.get(&get_selection(selections)).unwrap();
+            let mut selections = Vec::<TerminalMenuItem>::new();
+            selections.push(label("Select episode"));
+            for i in 1..=anime.available_episodes.sub {
+                selections.push(button(i.to_string()));
+            }
+            if selections.len() == 0 {
+                println!("{}", "\nNo episodes available".red().bold());
+                process::exit(0);
+            }
+            let episode = get_selection(selections).parse::<usize>().unwrap();
+            let mut sp = Spinner::new(
+                Spinners::Dots12,
+                format!("{}", " [2/4] Getting video ID".yellow().bold()),
+            );
+            let id = client.get_all_anime_video_id(anime, episode)?;
+            sp.stop();
+            println!();
+            match id {
+                None => {
+                    println!("{}", "\nStreaming links yeilded 0 results.".red().bold());
+                    process::exit(0);
+                }
+                Some((_service, id)) => {
+                    let mut sp = Spinner::new(
+                        Spinners::Dots12,
+                        format!("{}", " [3/4] Getting video URLs".yellow().bold()),
+                    );
+                    let cvideos = client.get_video_urls(&id)?;
+                    sp.stop();
+                    println!();
+                    if cvideos.links.len() == 0 {
+                        println!("{}", "\nVideo URL could not be obtained".red().bold());
+                        process::exit(0);
+                    }
+                    let videos = cvideos.clone();
+                    let video = match quality.as_str() {
+                        "1080" => get_quality(videos, "Mp4-1080p"),
+                        "720" => get_quality(videos, "Mp4-720p"),
+                        "480" => get_quality(videos, "Mp4-480p"),
+                        "360" => get_quality(videos, "Mp4-360p"),
+                        "270" => get_quality(videos, "Mp4-270p"),
+                        "144" => get_quality(videos, "Mp4-144p"),
+                        "default" => Some(videos.links[0].clone()),
+                        _ => None,
+                    };
+                    let video = match video {
+                        Some(v) => v,
+                        None => {
+                            println!(
+                                "{} {}",
+                                "Specified video quality not found, defaulting to"
+                                    .yellow()
+                                    .bold(),
+                                format!("{}", cvideos.links[0].res).green().bold()
+                            );
+                            cvideos.links[0].clone()
+                        }
+                    };
+                    println!("{}", "    [4/4] Downloading anime".yellow().bold());
+                    download(episode, video, &anime.name)?;
                 }
             }
         }
@@ -254,5 +342,17 @@ fn play(vlc: bool, video: Video, title: &str) -> Result<(), AnilineError> {
             )?;
         }
     }
+    Ok(())
+}
+
+fn download(episode: usize, video: Video, title: &str) -> Result<(), AnilineError> {
+    use subprocess::{Popen, PopenConfig, Redirection};
+    Popen::create(
+        &["aria2c", &video.link, &format!("--out={}-ep{}.mp4", title, episode)],
+        PopenConfig {
+            stdin: Redirection::Pipe,
+            ..Default::default()
+        },
+    )?;
     Ok(())
 }

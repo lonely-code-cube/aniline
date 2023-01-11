@@ -1,6 +1,6 @@
 [package]
 name = "aniline"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["lonely-code-cube"]
 description = "A cli tool to search, play, download anime, create playlists and more"
